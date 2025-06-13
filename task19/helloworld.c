@@ -8,21 +8,14 @@
 #define MY_ID "7c1caf2f50d1"
 static	struct ts_config *conf;
 
-static unsigned int myhook(const struct nf_hook_ops *ops,
-			   struct sk_buff *skb,
-			   const struct net_device *in,
-			   const struct net_device *out,
-			   int (*okfn)(struct sk_buff *))
+static unsigned int myhook(void *priv, struct sk_buff *skb,
+                           const struct nf_hook_state *state)
 {
-	int pos;
-	struct ts_state state;
+       unsigned int pos;
 
-	memset(&state, 0, sizeof(struct ts_state));
-
-	for (pos = skb_find_text(skb, 0, INT_MAX, conf, &state);
-	     pos != UINT_MAX;
-	     pos = textsearch_next(conf, &state))
-		pr_debug(MY_ID " at %d\n", pos);
+       pos = skb_find_text(skb, 0, skb->len, conf);
+       if (pos != UINT_MAX)
+               pr_debug(MY_ID " at %d\n", pos);
 
 	return NF_ACCEPT;
 }
@@ -42,14 +35,14 @@ static int __init hello_init(void)
 	if (IS_ERR(conf))
 		return PTR_ERR(conf);
 
-	return nf_register_hook(&euhooks);
+       return nf_register_net_hook(&init_net, &euhooks);
 }
 
 static void __exit hello_exit(void)
 {
 	pr_debug("Unregistering hook\n");
 	textsearch_destroy(conf);
-	nf_unregister_hook(&euhooks);
+       nf_unregister_net_hook(&init_net, &euhooks);
 }
 
 module_init(hello_init);
