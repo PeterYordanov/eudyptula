@@ -16,11 +16,15 @@ static struct task_struct *eudy_thread;
 #define NAME_LEN 20
 
 struct identity {
-	char name[NAME_LEN];
-	int id;
-	bool busy;
-	struct list_head list;
+        char name[NAME_LEN];
+        int id;
+        bool busy;
+        struct list_head list;
 };
+
+static struct identity *identity_get(void);
+static struct identity *identity_find(int id);
+static int identity_create(char *name, int id);
 
 static LIST_HEAD(identity_list);
 static int counter;
@@ -34,7 +38,8 @@ static struct identity *identity_get(void)
 	if (list_empty(&identity_list))
 		return NULL;
 
-	mutex_lock_interruptible(&i_mutex);
+       if (mutex_lock_interruptible(&i_mutex))
+               return NULL;
 	temp = list_entry(identity_list.next, struct identity, list);
 	list_del(&temp->list);
 	mutex_unlock(&i_mutex);
@@ -65,7 +70,8 @@ static int identity_create(char *name, int id)
 	if (!temp)
 		return -EINVAL;
 
-	mutex_lock_interruptible(&i_mutex);
+       if (mutex_lock_interruptible(&i_mutex))
+               return -ERESTARTSYS;
 	strncpy(temp->name, name, NAME_LEN-1);
 	temp->name[NAME_LEN-1] = '\0';
 	temp->id = id;
@@ -159,4 +165,4 @@ module_exit(hello_exit);
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("7c1caf2f50d1");
-MODULE_DESCRIPTION("Task 17 module");
+MODULE_DESCRIPTION("Task 18 module");
