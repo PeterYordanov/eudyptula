@@ -12,15 +12,19 @@
 #define NAME_LEN 20
 
 struct identity {
-	char name[NAME_LEN];
-	int id;
-	bool busy;
-	struct list_head list;
+        char name[NAME_LEN];
+        int id;
+        bool busy;
+        struct list_head list;
 };
+
+static struct identity *identity_find(int id);
+static int identity_create(char *name, int id);
+static void identity_destroy(int id);
 
 static LIST_HEAD(identity_list);
 
-struct identity *identity_find(int id)
+static struct identity *identity_find(int id)
 {
 	struct identity *temp;
 
@@ -32,7 +36,7 @@ struct identity *identity_find(int id)
 	return NULL;
 }
 
-int identity_create(char *name, int id)
+static int identity_create(char *name, int id)
 {
 	struct identity *temp;
 	int retval = -EINVAL;
@@ -57,7 +61,7 @@ out:	return retval;
 
 }
 
-void identity_destroy(int id)
+static void identity_destroy(int id)
 {
 	struct identity *temp;
 

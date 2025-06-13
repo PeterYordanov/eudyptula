@@ -9,7 +9,7 @@
 #define MY_ID "7c1caf2f50d1\n"
 #define MY_ID_LEN 13	/* MY_ID length */
 
-static DEFINE_SEMAPHORE(foo_sem);
+static DEFINE_SEMAPHORE(foo_sem, 1);
 
 static char foo_data[PAGE_SIZE];
 static int foo_len;
@@ -103,14 +103,9 @@ static int __init hello_init(void)
 	if (!eudy)
 		goto fail;
 
-	if (!debugfs_create_file("foo", 0644, eudy, NULL, &foo_fops))
-		goto fail;
-
-	if (!debugfs_create_u32("jiffies", 0444, eudy, (u32*)&jiffies))
-		goto fail;
-
-	if (!debugfs_create_file("id", 0666, eudy, NULL, &id_fops))
-		goto fail;
+       debugfs_create_file("foo", 0644, eudy, NULL, &foo_fops);
+       debugfs_create_ulong("jiffies", 0444, eudy, (unsigned long *)&jiffies);
+       debugfs_create_file("id", 0666, eudy, NULL, &id_fops);
 
 	pr_debug("Hello World!\n");
 	foo_len = 0;
